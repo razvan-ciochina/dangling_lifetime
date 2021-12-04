@@ -1,0 +1,4 @@
+This program is written as a demonstration of dangling references in cases where rvalues or const references are used thinking that they extend lifetime.
+As Arthur O'Dwyer says in one of his blog posts: ["Value category is not lifetime"](https://quuxplusone.github.io/blog/2019/03/11/value-category-is-not-lifetime/)
+This code is meant to make that claim observable. The reason I'm using a separate made class "DumbString" is owed to the constructor/destructor prints which allow the observation of when objects are destroyed.
+If a literal would've been used (like "test", or 1337, etc.) those are stored differently and it would've appeared that the objects' lifetime was indeed extended, which is false, their prolonged lifetime is owed to their storage outside of the scope of the called functions.
