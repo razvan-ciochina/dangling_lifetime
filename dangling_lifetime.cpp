@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iterator>
 #include <iostream>
+#include <array>
 
 #ifdef BACKTRACES
 // for backtrace
@@ -21,6 +22,33 @@ static void print_backtrace() {
     p.reverse = false;
     p.print(st);
 #endif
+}
+
+template <size_t V>
+class convert_base{
+public:
+    template<typename T, size_t N>
+    constexpr static void convert_one(std::array<T, N> &in_ref, const T (&v)[N])
+   {
+       in_ref[V-1] = v[V-1];
+       convert_base<V-1>::template convert_one<T, N>(in_ref, v);
+   }
+};
+
+template <>
+class convert_base<0> {
+public:
+    template<class T, size_t N>
+    constexpr static void convert_one(std::array<T, N> &in_ref, const T (&v)[N]) {
+        in_ref[0] = v[0];
+    }
+};
+
+template <typename T, size_t N>
+constexpr const std::array<T, N> convert_array_to_stdarray(const T (&carray)[N]) {
+    std::array<T, N> new_array{0};
+    convert_base<N>::convert_one(new_array, carray);
+    return new_array;
 }
 
 class DumbString {
@@ -50,9 +78,13 @@ public:
         std::cout << "DumbString mv ctor\n";
         _internal_str = rhs._internal_str;
         _len = rhs._len;
-        rhs._internal_str = new char[18];
-        memcpy(rhs._internal_str, "unknown but valid", 18);
-        _len = 18;
+
+        // set rhs internal to predefined string to symbolize
+        // the xvalue state
+        constexpr std::array unknown_str = convert_array_to_stdarray("unknown but valid");
+        rhs._internal_str = new char[unknown_str.size()];
+        rhs._len = unknown_str.size(); 
+        memcpy(rhs._internal_str, unknown_str.data(), rhs._len);
     }
 
     DumbString& operator=(DumbString const &rhs) {
@@ -67,9 +99,14 @@ public:
         std::cout << "DumbString mv asgn\n";
         _internal_str = rhs._internal_str;
         _len = rhs._len;
-        rhs._internal_str = new char[18];
-        rhs._len = 18;
-        memcpy(rhs._internal_str, "unknown but valid", 18);
+        
+        // set rhs internal to predefined string to symbolize
+        // the xvalue state
+        constexpr std::array unknown_str = convert_array_to_stdarray("unknown but valid");
+        rhs._internal_str = new char[unknown_str.size()];
+        rhs._len = unknown_str.size(); 
+        memcpy(rhs._internal_str, unknown_str.data(), rhs._len);
+
         return *this;
     }
 

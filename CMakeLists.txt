@@ -1,5 +1,6 @@
 cmake_minimum_required (VERSION 3.20)
 project (dangling_lifetime)
+set(CMAKE_CXX_STANDARD 17)
 
 if (NOT BACKTRACES)
 	set(INFO_MESSAGE "To enable backtraces please use -DBACKTRACES=ON, and set build type to Debug")
